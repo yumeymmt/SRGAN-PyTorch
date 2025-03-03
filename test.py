@@ -14,7 +14,7 @@
 import argparse
 import os
 import time
-from typing import List
+from typing import Any
 
 import cv2
 import torch
