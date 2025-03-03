@@ -15,7 +15,7 @@ import os
 import shutil
 from collections import OrderedDict
 from enum import Enum
-from typing import Any
+from typing import List
 
 import torch
 import torch.backends.mps

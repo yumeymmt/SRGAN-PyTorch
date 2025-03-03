@@ -13,7 +13,7 @@
 # ==============================================================================
 import math
 import random
-from typing import Any, List
+from typing import List
 
 import cv2
 import numpy as np
