@@ -30,9 +30,7 @@ from utils import build_iqa_model, load_pretrained_state_dict, make_directory, A
 
 def load_dataset(config: Any, device: torch.device) -> CUDAPrefetcher:
     test_datasets = PairedImageDataset(config["TEST"]["DATASET"]["PAIRED_TEST_GT_IMAGES_DIR"],
-                                       config["TEST"]["DATASET"]["PAIRED_TEST_LR_IMAGES_DIR"],
-                                       subfolder=config["TEST"]["DATASET"]["SUBFOLDER"],
-                                       suffix=config["TEST"]["DATASET"]["SUFFIX"])
+                                       config["TEST"]["DATASET"]["PAIRED_TEST_LR_IMAGES_DIR"])
     #--- data loading
     test_dataloader = DataLoader(test_datasets,
                                  batch_size=config["TEST"]["HYP"]["IMGS_PER_BATCH"],

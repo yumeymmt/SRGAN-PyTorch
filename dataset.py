@@ -109,15 +109,42 @@ class PairedImageDataset(Dataset):
         """
 
         super(PairedImageDataset, self).__init__()
+        # if not os.path.exists(paired_lr_images_dir):
+        #     raise FileNotFoundError(f"Registered low-resolution image address does not exist: {paired_lr_images_dir}")
+        # if not os.path.exists(paired_gt_images_dir):
+        #     raise FileNotFoundError(f"Registered high-resolution image address does not exist: {paired_gt_images_dir}")
+
+        # # Get a list of all image filenames
+        # image_files = natsorted(os.listdir(paired_lr_images_dir))
+        # self.paired_gt_image_file_names = [os.path.join(paired_gt_images_dir, x) for x in image_files]
+        # self.paired_lr_image_file_names = [os.path.join(paired_lr_images_dir, x) for x in image_files]
         if not os.path.exists(paired_lr_images_dir):
             raise FileNotFoundError(f"Registered low-resolution image address does not exist: {paired_lr_images_dir}")
         if not os.path.exists(paired_gt_images_dir):
             raise FileNotFoundError(f"Registered high-resolution image address does not exist: {paired_gt_images_dir}")
 
-        # Get a list of all image filenames
-        image_files = natsorted(os.listdir(paired_lr_images_dir))
-        self.paired_gt_image_file_names = [os.path.join(paired_gt_images_dir, x) for x in image_files]
-        self.paired_lr_image_file_names = [os.path.join(paired_lr_images_dir, x) for x in image_files]
+        # Get all main subfolders
+        lr_subfolders = natsorted(os.listdir(paired_lr_images_dir))
+
+        self.paired_lr_image_file_names = []
+        self.paired_gt_image_file_names = []
+
+        for subfolder in lr_subfolders:
+            lr_subfolder_path = os.path.join(paired_lr_images_dir, subfolder, "L2A")
+            gt_subfolder_path = os.path.join(paired_gt_images_dir, subfolder)
+
+            # Expected LR image inside "L2A" subfolder
+            lr_image_path = os.path.join(lr_subfolder_path, f"{subfolder}-L2A_data.png")
+
+            # Expected HR image inside its subfolder
+            gt_image_path = os.path.join(gt_subfolder_path, f"{subfolder}.png")
+
+            # Check if both images exist
+            if os.path.exists(lr_image_path) and os.path.exists(gt_image_path):
+                self.paired_lr_image_file_names.append(lr_image_path)
+                self.paired_gt_image_file_names.append(gt_image_path)
+            else:
+                print(f"Warning: Missing image for {subfolder}, skipping.")
 
     def __getitem__(self, batch_index: int) -> [Tensor, Tensor, str]:
         # Read a batch of image data

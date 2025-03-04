@@ -22,8 +22,6 @@ TEST:
   DATASET:
     PAIRED_TEST_GT_IMAGES_DIR: "/home/uas/yume/test_data_hr"
     PAIRED_TEST_LR_IMAGES_DIR: "/home/uas/yume/test_data_l2a"
-    SUBFOLDER: "L2A"
-    SUFFIX: "-L2A_data_upscaled.png"
 
   # Test hyperparameters
   HYP:
