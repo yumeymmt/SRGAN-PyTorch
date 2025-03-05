@@ -141,7 +141,7 @@ class PairedImageDataset(Dataset):
             #print("lr_image_path: \n", lr_image_path)
 
             # Expected HR image inside its subfolder
-            gt_image_path = os.path.join(gt_subfolder_path, f"{subfolder}_rgb.png")
+            gt_image_path = os.path.join(gt_subfolder_path, f"{subfolder}_rgb_1264.png")
             #print("gt_image_path: \n", gt_image_path)
 
             # Check if both images exist

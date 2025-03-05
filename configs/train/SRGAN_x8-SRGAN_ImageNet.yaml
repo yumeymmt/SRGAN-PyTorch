@@ -85,8 +85,8 @@ TRAIN:
 
 TEST:
   DATASET:
-    PAIRED_TEST_GT_IMAGES_DIR: "./data/Set5/X8/GT"
-    PAIRED_TEST_LR_IMAGES_DIR: "./data/Set5/X8/LR"
+    PAIRED_TEST_GT_IMAGES_DIR: "/home/uas/yume/test_data_hr"
+    PAIRED_TEST_LR_IMAGES_DIR: "/home/uas/yume/test_data_l2a"
 
   # Test hyperparameters
   HYP:
@@ -99,4 +99,4 @@ TEST:
   # Only test Y channel
   ONLY_TEST_Y_CHANNEL: True
 
-  SAVE_IMAGE_DIR: ""
+  SAVE_IMAGE_DIR: "/home/uas/yume/train_data_sr_8"
