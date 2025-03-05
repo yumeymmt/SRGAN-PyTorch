@@ -132,17 +132,17 @@ class PairedImageDataset(Dataset):
 
         for subfolder in lr_subfolders:
             lr_subfolder_path = os.path.join(paired_lr_images_dir, subfolder, "L2A")
-            print("lr_subfolder_path: \n", lr_subfolder_path)
+            #print("lr_subfolder_path: \n", lr_subfolder_path)
             gt_subfolder_path = os.path.join(paired_gt_images_dir, subfolder)
-            print("gt_subfolder_path: \n", gt_subfolder_path)
+            #print("gt_subfolder_path: \n", gt_subfolder_path)
 
             # Expected LR image inside "L2A" subfolder
-            lr_image_path = os.path.join(lr_subfolder_path, f"{subfolder}-L2A_data.png")
-            print("lr_image_path: \n", lr_image_path)
+            lr_image_path = os.path.join(lr_subfolder_path, f"{subfolder}-1-L2A_data.png")
+            #print("lr_image_path: \n", lr_image_path)
 
             # Expected HR image inside its subfolder
             gt_image_path = os.path.join(gt_subfolder_path, f"{subfolder}_rgb.png")
-            print("gt_image_path: \n", gt_image_path)
+            #print("gt_image_path: \n", gt_image_path)
 
             # Check if both images exist
             if os.path.exists(lr_image_path) and os.path.exists(gt_image_path):
