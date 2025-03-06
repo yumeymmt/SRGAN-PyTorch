@@ -85,8 +85,8 @@ TRAIN:
 
 TEST:
   DATASET:
-    PAIRED_TEST_GT_IMAGES_DIR: "./data/Set5/X8/GT"
-    PAIRED_TEST_LR_IMAGES_DIR: "./data/Set5/X8/LR"
+    PAIRED_TEST_GT_IMAGES_DIR: "/home/uas/yume/test_data_hr"
+    PAIRED_TEST_LR_IMAGES_DIR: "/home/uas/yume/test_data_l2a"
 
   # Test hyperparameters
   HYP:
