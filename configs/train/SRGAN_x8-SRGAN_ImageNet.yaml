@@ -31,7 +31,7 @@ TRAIN:
   DATASET:
     TRAIN_GT_IMAGES_DIR: "/home/uas/yume/train_data_hr"
     TRAIN_LR_IMAGES_DIR: "/home/uas/yume/train_data_l2a"
-    GT_IMAGE_SIZE: 96
+    GT_IMAGE_SIZE: 1264
 
   # Model file address, used for pre-training and recovery training
   CHECKPOINT:
@@ -99,6 +99,4 @@ TEST:
   # Only test Y channel
   ONLY_TEST_Y_CHANNEL: True
 
-=======
   SAVE_IMAGE_DIR: "/home/uas/yume/train_image_save_dir"
->>>>>>> 4cd786f0c1df7e2db5c520e00df876fd9c661568

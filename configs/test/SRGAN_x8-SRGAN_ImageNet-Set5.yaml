@@ -32,6 +32,6 @@ TEST:
     PERSISTENT_WORKERS: True
 
   # Only test Y channel
-  ONLY_TEST_Y_CHANNEL: True
+  ONLY_TEST_Y_CHANNEL: False
 
-  SAVE_IMAGE_DIR: "/home/uas/yume/test_data_sr_8"
+  SAVE_IMAGE_DIR: "/home/uas/yume/test_data_sr_8_F"

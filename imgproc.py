@@ -729,79 +729,79 @@ def random_crop_torch(
     return gt_images, lr_images
 
 
-# def random_rotate_torch(
-#         gt_images,
-#         lr_images,
-#         upscale_factor: int,
-#         angles: list,
-#         gt_center: tuple = None,
-#         lr_center: tuple = None,
-#         rotate_scale_factor: float = 1.0
-# ) -> [ndarray, ndarray] or [Tensor, Tensor] or [list[ndarray], list[ndarray]] or [list[Tensor], list[Tensor]]:
-#     """Randomly rotate the image
+def random_rotate_torch(
+        gt_images,
+        lr_images,
+        upscale_factor: int,
+        angles: list,
+        gt_center: tuple = None,
+        lr_center: tuple = None,
+        rotate_scale_factor: float = 1.0
+) -> [ndarray, ndarray] or [Tensor, Tensor] or [list[ndarray], list[ndarray]] or [list[Tensor], list[Tensor]]:
+    """Randomly rotate the image
 
-#     Args:
-#         gt_images (ndarray | Tensor | list[ndarray] | list[Tensor]): ground truth images read by the PyTorch library
-#         lr_images (ndarray | Tensor | list[ndarray] | list[Tensor]): low-resolution images read by the PyTorch library
-#         angles (list): List of random rotation angles
-#         upscale_factor (int): the ground truth image size is a magnification of the low resolution image size
-#         gt_center (optional, tuple[int, int]): The center point of the ground truth image selection. Default: ``None``
-#         lr_center (optional, tuple[int, int]): Low resolution image selection center point. Default: ``None``
-#         rotate_scale_factor (optional, float): Rotation scaling factor. Default: 1.0
+    Args:
+        gt_images (ndarray | Tensor | list[ndarray] | list[Tensor]): ground truth images read by the PyTorch library
+        lr_images (ndarray | Tensor | list[ndarray] | list[Tensor]): low-resolution images read by the PyTorch library
+        angles (list): List of random rotation angles
+        upscale_factor (int): the ground truth image size is a magnification of the low resolution image size
+        gt_center (optional, tuple[int, int]): The center point of the ground truth image selection. Default: ``None``
+        lr_center (optional, tuple[int, int]): Low resolution image selection center point. Default: ``None``
+        rotate_scale_factor (optional, float): Rotation scaling factor. Default: 1.0
 
-#     Returns:
-#         gt_images (ndarray or Tensor or): ground truth image after rotation
-#         lr_images (ndarray or Tensor or): Rotated low-resolution images
+    Returns:
+        gt_images (ndarray or Tensor or): ground truth image after rotation
+        lr_images (ndarray or Tensor or): Rotated low-resolution images
 
-#     """
-#     # Randomly choose the rotation angle
-#     angle = random.choice(angles)
+    """
+    # Randomly choose the rotation angle
+    angle = random.choice(angles)
 
-#     if not isinstance(gt_images, list):
-#         gt_images = [gt_images]
-#     if not isinstance(lr_images, list):
-#         lr_images = [lr_images]
+    if not isinstance(gt_images, list):
+        gt_images = [gt_images]
+    if not isinstance(lr_images, list):
+        lr_images = [lr_images]
 
-#     # detect input image type
-#     input_type = "Tensor" if torch.is_tensor(lr_images[0]) else "Numpy"
+    # detect input image type
+    input_type = "Tensor" if torch.is_tensor(lr_images[0]) else "Numpy"
 
-#     if input_type == "Tensor":
-#         lr_image_height, lr_image_width = lr_images[0].size()[-2:]
-#     else:
-#         lr_image_height, lr_image_width = lr_images[0].shape[0:2]
+    if input_type == "Tensor":
+        lr_image_height, lr_image_width = lr_images[0].size()[-2:]
+    else:
+        lr_image_height, lr_image_width = lr_images[0].shape[0:2]
 
-#     # Rotate the low-res image
-#     if lr_center is None:
-#         lr_center = [lr_image_width // 2, lr_image_height // 2]
+    # Rotate the low-res image
+    if lr_center is None:
+        lr_center = [lr_image_width // 2, lr_image_height // 2]
 
-#     lr_matrix = cv2.getRotationMatrix2D(lr_center, angle, rotate_scale_factor)
+    lr_matrix = cv2.getRotationMatrix2D(lr_center, angle, rotate_scale_factor)
 
-#     if input_type == "Tensor":
-#         lr_images = [F_vision.rotate(lr_image, angle, center=lr_center) for lr_image in lr_images]
-#     else:
-#         lr_images = [cv2.warpAffine(lr_image, lr_matrix, (lr_image_width, lr_image_height)) for lr_image in lr_images]
+    if input_type == "Tensor":
+        lr_images = [F_vision.rotate(lr_image, angle, center=lr_center) for lr_image in lr_images]
+    else:
+        lr_images = [cv2.warpAffine(lr_image, lr_matrix, (lr_image_width, lr_image_height)) for lr_image in lr_images]
 
-#     # rotate the ground truth image
-#     gt_image_width = int(lr_image_width * upscale_factor)
-#     gt_image_height = int(lr_image_height * upscale_factor)
+    # rotate the ground truth image
+    gt_image_width = int(lr_image_width * upscale_factor)
+    gt_image_height = int(lr_image_height * upscale_factor)
 
-#     if gt_center is None:
-#         gt_center = [gt_image_width // 2, gt_image_height // 2]
+    if gt_center is None:
+        gt_center = [gt_image_width // 2, gt_image_height // 2]
 
-#     gt_matrix = cv2.getRotationMatrix2D(gt_center, angle, rotate_scale_factor)
+    gt_matrix = cv2.getRotationMatrix2D(gt_center, angle, rotate_scale_factor)
 
-#     if input_type == "Tensor":
-#         gt_images = [F_vision.rotate(gt_image, angle, center=gt_center) for gt_image in gt_images]
-#     else:
-#         gt_images = [cv2.warpAffine(gt_image, gt_matrix, (gt_image_width, gt_image_height)) for gt_image in gt_images]
+    if input_type == "Tensor":
+        gt_images = [F_vision.rotate(gt_image, angle, center=gt_center) for gt_image in gt_images]
+    else:
+        gt_images = [cv2.warpAffine(gt_image, gt_matrix, (gt_image_width, gt_image_height)) for gt_image in gt_images]
 
-#     # When the input has only one image
-#     if len(gt_images) == 1:
-#         gt_images = gt_images[0]
-#     if len(lr_images) == 1:
-#         lr_images = lr_images[0]
+    # When the input has only one image
+    if len(gt_images) == 1:
+        gt_images = gt_images[0]
+    if len(lr_images) == 1:
+        lr_images = lr_images[0]
 
-#     return gt_images, lr_images
+    return gt_images, lr_images
 
 
 def random_horizontally_flip_torch(
