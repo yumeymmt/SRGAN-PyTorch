@@ -29,8 +29,8 @@ MODEL:
 
 TRAIN:
   DATASET:
-    TRAIN_GT_IMAGES_DIR: "./data/SRGAN_ImageNet_train_GT_sub"
-
+    TRAIN_GT_IMAGES_DIR: "/home/uas/yume/train_data_hr"
+    TRAIN_LR_IMAGES_DIR: "/home/uas/yume/train_data_l2a"
     GT_IMAGE_SIZE: 96
 
   # Model file address, used for pre-training and recovery training

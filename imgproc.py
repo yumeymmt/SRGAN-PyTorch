@@ -509,33 +509,33 @@ def random_crop(image: np.ndarray, image_size: int) -> np.ndarray:
     return patch_image
 
 
-# def random_rotate(image,
-#                   angles: list,
-#                   center: tuple[int, int] = None,
-#                   scale_factor: float = 1.0) -> np.ndarray:
-#     """Rotate an image by a random angle
+def random_rotate(image,
+                  angles: list,
+                  center: tuple[int, int] = None,
+                  scale_factor: float = 1.0) -> np.ndarray:
+    """Rotate an image by a random angle
 
-#     Args:
-#         image (np.ndarray): Image read with OpenCV
-#         angles (list): Rotation angle range
-#         center (optional, tuple[int, int]): High resolution image selection center point. Default: ``None``
-#         scale_factor (optional, float): scaling factor. Default: 1.0
+    Args:
+        image (np.ndarray): Image read with OpenCV
+        angles (list): Rotation angle range
+        center (optional, tuple[int, int]): High resolution image selection center point. Default: ``None``
+        scale_factor (optional, float): scaling factor. Default: 1.0
 
-#     Returns:
-#         rotated_image (np.ndarray): image after rotation
+    Returns:
+        rotated_image (np.ndarray): image after rotation
 
-#     """
-#     image_height, image_width = image.shape[:2]
+    """
+    image_height, image_width = image.shape[:2]
 
-#     if center is None:
-#         center = (image_width // 2, image_height // 2)
+    if center is None:
+        center = (image_width // 2, image_height // 2)
 
-#     # Random select specific angle
-#     angle = random.choice(angles)
-#     matrix = cv2.getRotationMatrix2D(center, angle, scale_factor)
-#     rotated_image = cv2.warpAffine(image, matrix, (image_width, image_height))
+    # Random select specific angle
+    angle = random.choice(angles)
+    matrix = cv2.getRotationMatrix2D(center, angle, scale_factor)
+    rotated_image = cv2.warpAffine(image, matrix, (image_width, image_height))
 
-#     return rotated_image
+    return rotated_image
 
 
 def random_horizontally_flip(image: np.ndarray, p: float = 0.5) -> np.ndarray:
