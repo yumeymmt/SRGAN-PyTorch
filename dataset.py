@@ -79,6 +79,8 @@ class BaseImageDataset(Dataset):
 
                 # Check if both images exist
                 if os.path.exists(lr_image_path) and os.path.exists(gt_image_path):
+                    self.lr_image_file_names = []
+                    self.gt_image_file_names = []
                     self.lr_image_file_names.append(lr_image_path)
                     self.gt_image_file_names.append(gt_image_path)
                 else:
