@@ -57,15 +57,38 @@ class BaseImageDataset(Dataset):
 
         # Read a batch of low-resolution images
         if lr_images_dir is None:
+            print("Huh?\n")
             image_file_names = natsorted(os.listdir(gt_images_dir))
             self.lr_image_file_names = None
             self.gt_image_file_names = [os.path.join(gt_images_dir, image_file_name) for image_file_name in image_file_names]
         else:
-            if os.listdir(lr_images_dir) == 0:
-                raise RuntimeError("LR image folder is empty.")
-            image_file_names = natsorted(os.listdir(lr_images_dir))
-            self.lr_image_file_names = [os.path.join(lr_images_dir, image_file_name) for image_file_name in image_file_names]
-            self.gt_image_file_names = [os.path.join(gt_images_dir, image_file_name) for image_file_name in image_file_names]
+            lr_subfolders = os.listdir(lr_images_dir)
+            for subfolder in lr_subfolders:
+                lr_subfolder_path = os.path.join(lr_images_dir, subfolder, "L2A")
+                #print("lr_subfolder_path: \n", lr_subfolder_path)
+                gt_subfolder_path = os.path.join(gt_images_dir, subfolder)
+                #print("gt_subfolder_path: \n", gt_subfolder_path)
+
+                # Expected LR image inside "L2A" subfolder
+                lr_image_path = os.path.join(lr_subfolder_path, f"{subfolder}-1-L2A_data.png")
+                #print("lr_image_path: \n", lr_image_path)
+
+                # Expected HR image inside its subfolder
+                gt_image_path = os.path.join(gt_subfolder_path, f"{subfolder}_rgb.png")
+                #print("gt_image_path: \n", gt_image_path)
+
+                # Check if both images exist
+                if os.path.exists(lr_image_path) and os.path.exists(gt_image_path):
+                    self.lr_image_file_names.append(lr_image_path)
+                    self.gt_image_file_names.append(gt_image_path)
+                else:
+                    print(f"Warning: Missing image for {subfolder}, skipping.")
+            
+            # if os.listdir(lr_images_dir) == 0:
+            #     raise RuntimeError("LR image folder is empty.")
+            # image_file_names = natsorted(os.listdir(lr_images_dir))
+            # self.lr_image_file_names = [os.path.join(lr_images_dir, image_file_name) for image_file_name in image_file_names]
+            # self.gt_image_file_names = [os.path.join(gt_images_dir, image_file_name) for image_file_name in image_file_names]
 
         self.upscale_factor = upscale_factor
 
