@@ -167,8 +167,7 @@ class SRResNet(nn.Module):
         x = torch.clamp_(x, 0.0, 1.0)
 
         return x
-
-
+    
 class DiscriminatorForVGG(nn.Module):
     def __init__(
             self,
@@ -178,51 +177,113 @@ class DiscriminatorForVGG(nn.Module):
     ) -> None:
         super(DiscriminatorForVGG, self).__init__()
         self.features = nn.Sequential(
-            # input size. (3) x 96 x 96
+            # input size. (3) x 1264 x 1264
             nn.Conv2d(in_channels, channels, (3, 3), (1, 1), (1, 1), bias=True),
             nn.LeakyReLU(0.2, True),
-            # state size. (64) x 48 x 48
+            # state size. (64) x 632 x 632
             nn.Conv2d(channels, channels, (3, 3), (2, 2), (1, 1), bias=False),
             nn.BatchNorm2d(channels),
             nn.LeakyReLU(0.2, True),
             nn.Conv2d(channels, int(2 * channels), (3, 3), (1, 1), (1, 1), bias=False),
             nn.BatchNorm2d(int(2 * channels)),
             nn.LeakyReLU(0.2, True),
-            # state size. (128) x 24 x 24
+            # state size. (128) x 316 x 316
             nn.Conv2d(int(2 * channels), int(2 * channels), (3, 3), (2, 2), (1, 1), bias=False),
             nn.BatchNorm2d(int(2 * channels)),
             nn.LeakyReLU(0.2, True),
             nn.Conv2d(int(2 * channels), int(4 * channels), (3, 3), (1, 1), (1, 1), bias=False),
             nn.BatchNorm2d(int(4 * channels)),
             nn.LeakyReLU(0.2, True),
-            # state size. (256) x 12 x 12
+            # state size. (256) x 158 x 158
             nn.Conv2d(int(4 * channels), int(4 * channels), (3, 3), (2, 2), (1, 1), bias=False),
             nn.BatchNorm2d(int(4 * channels)),
             nn.LeakyReLU(0.2, True),
             nn.Conv2d(int(4 * channels), int(8 * channels), (3, 3), (1, 1), (1, 1), bias=False),
             nn.BatchNorm2d(int(8 * channels)),
             nn.LeakyReLU(0.2, True),
-            # state size. (512) x 6 x 6
+            # state size. (512) x 79 x 79
             nn.Conv2d(int(8 * channels), int(8 * channels), (3, 3), (2, 2), (1, 1), bias=False),
             nn.BatchNorm2d(int(8 * channels)),
             nn.LeakyReLU(0.2, True),
         )
 
+        # Use dynamic calculation for flattening based on input size
         self.classifier = nn.Sequential(
-            nn.Linear(int(8 * channels) * 6 * 6, 1024),
+            nn.Linear(self._get_fc_input_size(), 1024),  # Dynamically computed input size
             nn.LeakyReLU(0.2, True),
             nn.Linear(1024, out_channels),
         )
 
-    def forward(self, x: Tensor) -> Tensor:
-        # Input image size must equal 96
-        assert x.size(2) == 96 and x.size(3) == 96, "Input image size must be is 96x96"
+    def _get_fc_input_size(self):
+        # Create a dummy tensor of the input size (using batch size 1 and 3 channels)
+        dummy_input = torch.zeros(1, 3, 200, 200)
+        # Pass it through the feature extractor to get the output size
+        output = self.features(dummy_input)
+        # Return the flattened output size for the classifier input layer
+        return int(output.numel())
 
+    def forward(self, x: Tensor) -> Tensor:
         x = self.features(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
 
         return x
+
+
+# class DiscriminatorForVGG(nn.Module):
+#     def __init__(
+#             self,
+#             in_channels: int = 3,
+#             out_channels: int = 1,
+#             channels: int = 64,
+#     ) -> None:
+#         super(DiscriminatorForVGG, self).__init__()
+#         self.features = nn.Sequential(
+#             # input size. (3) x 96 x 96
+#             nn.Conv2d(in_channels, channels, (3, 3), (1, 1), (1, 1), bias=True),
+#             nn.LeakyReLU(0.2, True),
+#             # state size. (64) x 48 x 48
+#             nn.Conv2d(channels, channels, (3, 3), (2, 2), (1, 1), bias=False),
+#             nn.BatchNorm2d(channels),
+#             nn.LeakyReLU(0.2, True),
+#             nn.Conv2d(channels, int(2 * channels), (3, 3), (1, 1), (1, 1), bias=False),
+#             nn.BatchNorm2d(int(2 * channels)),
+#             nn.LeakyReLU(0.2, True),
+#             # state size. (128) x 24 x 24
+#             nn.Conv2d(int(2 * channels), int(2 * channels), (3, 3), (2, 2), (1, 1), bias=False),
+#             nn.BatchNorm2d(int(2 * channels)),
+#             nn.LeakyReLU(0.2, True),
+#             nn.Conv2d(int(2 * channels), int(4 * channels), (3, 3), (1, 1), (1, 1), bias=False),
+#             nn.BatchNorm2d(int(4 * channels)),
+#             nn.LeakyReLU(0.2, True),
+#             # state size. (256) x 12 x 12
+#             nn.Conv2d(int(4 * channels), int(4 * channels), (3, 3), (2, 2), (1, 1), bias=False),
+#             nn.BatchNorm2d(int(4 * channels)),
+#             nn.LeakyReLU(0.2, True),
+#             nn.Conv2d(int(4 * channels), int(8 * channels), (3, 3), (1, 1), (1, 1), bias=False),
+#             nn.BatchNorm2d(int(8 * channels)),
+#             nn.LeakyReLU(0.2, True),
+#             # state size. (512) x 6 x 6
+#             nn.Conv2d(int(8 * channels), int(8 * channels), (3, 3), (2, 2), (1, 1), bias=False),
+#             nn.BatchNorm2d(int(8 * channels)),
+#             nn.LeakyReLU(0.2, True),
+#         )
+
+#         self.classifier = nn.Sequential(
+#             nn.Linear(int(8 * channels) * 6 * 6, 1024),
+#             nn.LeakyReLU(0.2, True),
+#             nn.Linear(1024, out_channels),
+#         )
+
+#     def forward(self, x: Tensor) -> Tensor:
+#         # Input image size must equal 96
+#         assert x.size(2) == 96 and x.size(3) == 96, "Input image size must be is 96x96"
+
+#         x = self.features(x)
+#         x = torch.flatten(x, 1)
+#         x = self.classifier(x)
+
+#         return x
 
 
 class _ResidualConvBlock(nn.Module):
