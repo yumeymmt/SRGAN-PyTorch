@@ -37,6 +37,7 @@ from utils import build_iqa_model, load_resume_state_dict, load_pretrained_state
 
 
 def main():
+    torch.cuda.empty_cache()
     # Read parameters from configuration file
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_path",
@@ -70,8 +71,12 @@ def main():
     # Define the running device number
     device = torch.device("cuda", config["DEVICE_ID"])
 
+    print(f"Using device: {device}")
+
+
     # Define the basic functions needed to start training
     train_data_prefetcher, paired_test_data_prefetcher = load_dataset(config, device)
+
     g_model, ema_g_model, d_model = build_model(config, device)
     pixel_criterion, content_criterion, adversarial_criterion = define_loss(config, device)
     g_optimizer, d_optimizer = define_optimizer(g_model, d_model, config)
@@ -207,8 +212,9 @@ def load_dataset(
     degenerated_train_datasets = BaseImageDataset(
         config["TRAIN"]["DATASET"]["TRAIN_GT_IMAGES_DIR"],
         config["TRAIN"]["DATASET"]["TRAIN_LR_IMAGES_DIR"],
-        config["SCALE"],
+        config["SCALE"]
     )
+    print("training datasize: ", len(degenerated_train_datasets))
 
     # Load the registration test dataset
     paired_test_datasets = PairedImageDataset(config["TEST"]["DATASET"]["PAIRED_TEST_GT_IMAGES_DIR"],
@@ -231,6 +237,8 @@ def load_dataset(
                                         persistent_workers=config["TEST"]["HYP"]["PERSISTENT_WORKERS"])
 
     # Replace the data set iterator with CUDA to speed up
+
+
     train_data_prefetcher = CUDAPrefetcher(degenerated_train_dataloader, device)
     paired_test_data_prefetcher = CUDAPrefetcher(paired_test_dataloader, device)
 
@@ -248,9 +256,13 @@ def build_model(
     d_model = model.__dict__[config["MODEL"]["D"]["NAME"]](in_channels=config["MODEL"]["D"]["IN_CHANNELS"],
                                                            out_channels=config["MODEL"]["D"]["OUT_CHANNELS"],
                                                            channels=config["MODEL"]["D"]["CHANNELS"])
-
+    print("gmodel")
     g_model = g_model.to(device)
+    print("demodel")
     d_model = d_model.to(device)
+
+    print(f"Generator model on: {next(g_model.parameters()).device}")
+    print(f"Discriminator model on: {next(d_model.parameters()).device}")
 
     if config["MODEL"]["EMA"]["ENABLE"]:
         # Generate an exponential average model based on a generator to stabilize model training
@@ -355,6 +367,7 @@ def train(
 ) -> None:
     # Calculate how many batches of data there are under a dataset iterator
     batches = len(train_data_prefetcher)
+    print("there are ", batches, " number of batches")
 
     # The information printed by the progress bar
     batch_time = AverageMeter("Time", ":6.3f", Summary.NONE)
@@ -383,8 +396,11 @@ def train(
     # load the first batch of data
     batch_data = train_data_prefetcher.next()
 
+
     # Used for discriminator binary classification output, the input sample comes from the data set (real sample) is marked as 1, and the input sample comes from the generator (generated sample) is marked as 0
+    # print(batch_data["gt"][0])
     batch_size = batch_data["gt"].shape[0]
+    
     if config["MODEL"]["D"]["NAME"] == "discriminator_for_vgg":
         real_label = torch.full([batch_size, 1], 1.0, dtype=torch.float, device=device)
         fake_label = torch.full([batch_size, 1], 0.0, dtype=torch.float, device=device)
@@ -427,6 +443,7 @@ def train(
             pixel_loss = pixel_criterion(sr, gt)
             feature_loss = content_criterion(sr, gt)
             adversarial_loss = adversarial_criterion(d_model(sr), real_label)
+            # print("!!!!!!!!!!!!!!!!!!!!!!!!!!hi")
             pixel_loss = torch.sum(torch.mul(pixel_weight, pixel_loss))
             feature_loss = torch.sum(torch.mul(feature_weight, feature_loss))
             adversarial_loss = torch.sum(torch.mul(adversarial_weight, adversarial_loss))
@@ -501,6 +518,8 @@ def train(
 
         # After training a batch of data, add 1 to the number of data batches to ensure that the terminal prints data normally
         batch_index += 1
+
+        torch.cuda.empty_cache()
 
 
 if __name__ == "__main__":

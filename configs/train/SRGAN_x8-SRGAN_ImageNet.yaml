@@ -29,22 +29,21 @@ MODEL:
 
 TRAIN:
   DATASET:
-    TRAIN_GT_IMAGES_DIR: "/home/uas/yume/train_data_hr"
-    TRAIN_LR_IMAGES_DIR: "/home/uas/yume/train_data_l2a"
-    GT_IMAGE_SIZE: 1264
+    TRAIN_GT_IMAGES_DIR: "/home/uas/yume/train_hr_patches"
+    TRAIN_LR_IMAGES_DIR: "/home/uas/yume/train_lr_patches"
+    GT_IMAGE_SIZE: 200
 
   # Model file address, used for pre-training and recovery training
   CHECKPOINT:
-    PRETRAINED_G_MODEL: "./results/SRResNet_x8-SRGAN_ImageNet/g_last.pth.tar"
+    PRETRAINED_G_MODEL: ""
     PRETRAINED_D_MODEL: ""
     RESUMED_G_MODEL: ""
     RESUMED_D_MODEL: ""
 
   # training hyperparameters
   HYP:
-    EPOCHS: 18
-
-    IMGS_PER_BATCH: 16
+    EPOCHS: 5
+    IMGS_PER_BATCH: 4
     SHUFFLE: True
     NUM_WORKERS: 4
     PIN_MEMORY: True
@@ -85,8 +84,8 @@ TRAIN:
 
 TEST:
   DATASET:
-    PAIRED_TEST_GT_IMAGES_DIR: "/home/uas/yume/test_data_hr"
-    PAIRED_TEST_LR_IMAGES_DIR: "/home/uas/yume/test_data_l2a"
+    PAIRED_TEST_GT_IMAGES_DIR: "/home/uas/yume/test_hr_patches"
+    PAIRED_TEST_LR_IMAGES_DIR: "/home/uas/yume/test_lr_patches"
 
   # Test hyperparameters
   HYP:
@@ -99,4 +98,4 @@ TEST:
   # Only test Y channel
   ONLY_TEST_Y_CHANNEL: True
 
-  SAVE_IMAGE_DIR: "/home/uas/yume/train_image_save_dir"
+  SAVE_IMAGE_DIR: "/home/uas/yume/train_image_save0324"
