@@ -14,6 +14,7 @@
 import os
 import queue
 import threading
+import re 
 
 import cv2
 import numpy as np
@@ -90,15 +91,17 @@ class BaseImageDataset(Dataset):
             # Directly get all images in the given directory
             lr_image_file_names = natsorted(os.listdir(lr_images_dir))
             
-            # Ensure that the list contains only valid files (matching the naming convention)
             self.lr_image_file_names = [
-                os.path.join(lr_images_dir, image_file_name) for image_file_name in lr_image_file_names if image_file_name.startswith("lr_patch")
-            ]
-            
-            # Similarly, load the ground truth images
+            os.path.join(lr_images_dir, image_file_name)
+            for image_file_name in lr_image_file_names
+            if re.match(r"lr_patch_\d+_\d+\.png$", image_file_name)]  # Matches "lr_patch_2_9.png" but not "lr_patch_2.png"
+
+            # Similarly, load valid GT images
             gt_image_file_names = natsorted(os.listdir(gt_images_dir))
             self.gt_image_file_names = [
-                os.path.join(gt_images_dir, image_file_name) for image_file_name in gt_image_file_names if image_file_name.startswith("hr_patch")
+                os.path.join(gt_images_dir, image_file_name)
+                for image_file_name in gt_image_file_names
+                if re.match(r"hr_patch_\d+_\d+\.png$", image_file_name)  # Matches "hr_patch_2_9.png" but not "hr_patch_2.png"
             ]
             
             # Check that both lists of image paths are the same length
@@ -176,9 +179,15 @@ class PairedImageDataset(Dataset):
         lr_image_file_names = natsorted(os.listdir(paired_lr_images_dir))
         gt_image_file_names = natsorted(os.listdir(paired_gt_images_dir))
 
-        # Filter files based on expected filename patterns (optional but safer)
-        lr_image_file_names = [file for file in lr_image_file_names if file.startswith("lr_patch")]
-        gt_image_file_names = [file for file in gt_image_file_names if file.startswith("hr_patch")]
+        # Ensure only valid LR images with two numbers in their name
+        lr_image_file_names = [
+            file for file in lr_image_file_names if re.match(r"lr_patch_\d+_\d+\.png$", file)
+        ]
+
+        # Ensure only valid GT images with two numbers in their name
+        gt_image_file_names = [
+            file for file in gt_image_file_names if re.match(r"hr_patch_\d+_\d+\.png$", file)
+        ]
 
         # Combine full paths
         self.paired_lr_image_file_names = [os.path.join(paired_lr_images_dir, file) for file in lr_image_file_names]
