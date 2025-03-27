@@ -172,59 +172,65 @@ class PairedImageDataset(Dataset):
         if not os.path.exists(paired_gt_images_dir):
             raise FileNotFoundError(f"Registered high-resolution image address does not exist: {paired_gt_images_dir}")
         
-        self.paired_lr_image_file_names = []
-        self.paired_gt_image_file_names = []
-
-        # List all files in the LR and GT directories
-        lr_image_file_names = natsorted(os.listdir(paired_lr_images_dir))
-        gt_image_file_names = natsorted(os.listdir(paired_gt_images_dir))
-
-        # Ensure only valid LR images with two numbers in their name
-        lr_image_file_names = [
-            file for file in lr_image_file_names if re.match(r"lr_patch_\d+_\d+\.png$", file)
-        ]
-
-        # Ensure only valid GT images with two numbers in their name
-        gt_image_file_names = [
-            file for file in gt_image_file_names if re.match(r"hr_patch_\d+_\d+\.png$", file)
-        ]
-
-        # Combine full paths
-        self.paired_lr_image_file_names = [os.path.join(paired_lr_images_dir, file) for file in lr_image_file_names]
-        self.paired_gt_image_file_names = [os.path.join(paired_gt_images_dir, file) for file in gt_image_file_names]
-
-        # Check if the number of images match
-        if len(self.paired_lr_image_file_names) != len(self.paired_gt_image_file_names):
-            raise RuntimeError("Mismatch between the number of paired LR and GT images.")
 
 
-        # # Get all main subfolders
-        # #lr_subfolders = natsorted(os.listdir(paired_lr_images_dir))
-        # lr_subfolders = os.listdir(paired_lr_images_dir)
-
+        # ## Where patch code starts
         # self.paired_lr_image_file_names = []
         # self.paired_gt_image_file_names = []
 
-        # for subfolder in lr_subfolders:
-        #     lr_subfolder_path = os.path.join(paired_lr_images_dir, subfolder, "L2A")
-        #     #print("lr_subfolder_path: \n", lr_subfolder_path)
-        #     gt_subfolder_path = os.path.join(paired_gt_images_dir, subfolder)
-        #     #print("gt_subfolder_path: \n", gt_subfolder_path)
+        # # List all files in the LR and GT directories
+        # lr_image_file_names = natsorted(os.listdir(paired_lr_images_dir))
+        # gt_image_file_names = natsorted(os.listdir(paired_gt_images_dir))
 
-        #     # Expected LR image inside "L2A" subfolder
-        #     lr_image_path = os.path.join(lr_subfolder_path, f"{subfolder}-1-L2A_data.png")
-        #     #print("lr_image_path: \n", lr_image_path)
+        # # Ensure only valid LR images with two numbers in their name
+        # lr_image_file_names = [
+        #     file for file in lr_image_file_names if re.match(r"lr_patch_\d+_\d+\.png$", file)
+        # ]
 
-        #     # Expected HR image inside its subfolder
-        #     gt_image_path = os.path.join(gt_subfolder_path, f"{subfolder}_rgb_1264.png")
-        #     #print("gt_image_path: \n", gt_image_path)
+        # # Ensure only valid GT images with two numbers in their name
+        # gt_image_file_names = [
+        #     file for file in gt_image_file_names if re.match(r"hr_patch_\d+_\d+\.png$", file)
+        # ]
 
-        #     # Check if both images exist
-        #     if os.path.exists(lr_image_path) and os.path.exists(gt_image_path):
-        #         self.paired_lr_image_file_names.append(lr_image_path)
-        #         self.paired_gt_image_file_names.append(gt_image_path)
-        #     else:
-        #         print(f"Warning: Missing image for {subfolder}, skipping.")
+        # # Combine full paths
+        # self.paired_lr_image_file_names = [os.path.join(paired_lr_images_dir, file) for file in lr_image_file_names]
+        # self.paired_gt_image_file_names = [os.path.join(paired_gt_images_dir, file) for file in gt_image_file_names]
+
+        # # Check if the number of images match
+        # if len(self.paired_lr_image_file_names) != len(self.paired_gt_image_file_names):
+        #     raise RuntimeError("Mismatch between the number of paired LR and GT images.")
+
+
+
+        ## Old code (pls do not remove)
+
+        # Get all main subfolders
+        #lr_subfolders = natsorted(os.listdir(paired_lr_images_dir))
+        lr_subfolders = os.listdir(paired_lr_images_dir)
+
+        self.paired_lr_image_file_names = []
+        self.paired_gt_image_file_names = []
+
+        for subfolder in lr_subfolders:
+            lr_subfolder_path = os.path.join(paired_lr_images_dir, subfolder, "L2A")
+            #print("lr_subfolder_path: \n", lr_subfolder_path)
+            gt_subfolder_path = os.path.join(paired_gt_images_dir, subfolder)
+            #print("gt_subfolder_path: \n", gt_subfolder_path)
+
+            # Expected LR image inside "L2A" subfolder
+            lr_image_path = os.path.join(lr_subfolder_path, f"{subfolder}-1-L2A_data.png")
+            #print("lr_image_path: \n", lr_image_path)
+
+            # Expected HR image inside its subfolder
+            gt_image_path = os.path.join(gt_subfolder_path, f"{subfolder}_rgb_1264.png")
+            #print("gt_image_path: \n", gt_image_path)
+
+            # Check if both images exist
+            if os.path.exists(lr_image_path) and os.path.exists(gt_image_path):
+                self.paired_lr_image_file_names.append(lr_image_path)
+                self.paired_gt_image_file_names.append(gt_image_path)
+            else:
+                print(f"Warning: Missing image for {subfolder}, skipping.")
 
     def __getitem__(self, batch_index: int) -> [Tensor, Tensor, str]:
         # Read a batch of image data
