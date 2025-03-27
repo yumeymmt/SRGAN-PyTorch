@@ -125,6 +125,8 @@ class SRResNet(nn.Module):
             trunk.append(_ResidualConvBlock(channels))
         self.trunk = nn.Sequential(*trunk)
 
+        self.attn_block = ChannelAttention(channels)
+
         # High-frequency information linear fusion layer
         self.conv2 = nn.Sequential(
             nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1), bias=False),
@@ -159,6 +161,7 @@ class SRResNet(nn.Module):
     def _forward_impl(self, x: Tensor) -> Tensor:
         conv1 = self.conv1(x)
         x = self.trunk(conv1)
+        x = self.attn_block(x) 
         x = self.conv2(x)
         x = torch.add(x, conv1)
         x = self.upsampling(x)
@@ -228,62 +231,6 @@ class DiscriminatorForVGG(nn.Module):
         x = self.classifier(x)
 
         return x
-
-
-# class DiscriminatorForVGG(nn.Module):
-#     def __init__(
-#             self,
-#             in_channels: int = 3,
-#             out_channels: int = 1,
-#             channels: int = 64,
-#     ) -> None:
-#         super(DiscriminatorForVGG, self).__init__()
-#         self.features = nn.Sequential(
-#             # input size. (3) x 96 x 96
-#             nn.Conv2d(in_channels, channels, (3, 3), (1, 1), (1, 1), bias=True),
-#             nn.LeakyReLU(0.2, True),
-#             # state size. (64) x 48 x 48
-#             nn.Conv2d(channels, channels, (3, 3), (2, 2), (1, 1), bias=False),
-#             nn.BatchNorm2d(channels),
-#             nn.LeakyReLU(0.2, True),
-#             nn.Conv2d(channels, int(2 * channels), (3, 3), (1, 1), (1, 1), bias=False),
-#             nn.BatchNorm2d(int(2 * channels)),
-#             nn.LeakyReLU(0.2, True),
-#             # state size. (128) x 24 x 24
-#             nn.Conv2d(int(2 * channels), int(2 * channels), (3, 3), (2, 2), (1, 1), bias=False),
-#             nn.BatchNorm2d(int(2 * channels)),
-#             nn.LeakyReLU(0.2, True),
-#             nn.Conv2d(int(2 * channels), int(4 * channels), (3, 3), (1, 1), (1, 1), bias=False),
-#             nn.BatchNorm2d(int(4 * channels)),
-#             nn.LeakyReLU(0.2, True),
-#             # state size. (256) x 12 x 12
-#             nn.Conv2d(int(4 * channels), int(4 * channels), (3, 3), (2, 2), (1, 1), bias=False),
-#             nn.BatchNorm2d(int(4 * channels)),
-#             nn.LeakyReLU(0.2, True),
-#             nn.Conv2d(int(4 * channels), int(8 * channels), (3, 3), (1, 1), (1, 1), bias=False),
-#             nn.BatchNorm2d(int(8 * channels)),
-#             nn.LeakyReLU(0.2, True),
-#             # state size. (512) x 6 x 6
-#             nn.Conv2d(int(8 * channels), int(8 * channels), (3, 3), (2, 2), (1, 1), bias=False),
-#             nn.BatchNorm2d(int(8 * channels)),
-#             nn.LeakyReLU(0.2, True),
-#         )
-
-#         self.classifier = nn.Sequential(
-#             nn.Linear(int(8 * channels) * 6 * 6, 1024),
-#             nn.LeakyReLU(0.2, True),
-#             nn.Linear(1024, out_channels),
-#         )
-
-#     def forward(self, x: Tensor) -> Tensor:
-#         # Input image size must equal 96
-#         assert x.size(2) == 96 and x.size(3) == 96, "Input image size must be is 96x96"
-
-#         x = self.features(x)
-#         x = torch.flatten(x, 1)
-#         x = self.classifier(x)
-
-#         return x
 
 
 class _ResidualConvBlock(nn.Module):
@@ -413,3 +360,32 @@ def discriminator_for_vgg(**kwargs) -> DiscriminatorForVGG:
     model = DiscriminatorForVGG(**kwargs)
 
     return model
+
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16):
+        super(ChannelAttention, self).__init__()
+        self.in_channels = in_channels
+        self.reduction = reduction
+        
+        # Squeeze: Global Average Pooling
+        self.global_avg_pool = nn.AdaptiveAvgPool2d(1)
+        
+        # Excitation: Fully connected layers to learn channel attention
+        self.fc1 = nn.Conv2d(in_channels, in_channels // self.reduction, kernel_size=1)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Conv2d(in_channels // self.reduction, in_channels, kernel_size=1)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x: Tensor) -> Tensor:
+        # Squeeze operation: global average pooling
+        squeeze = self.global_avg_pool(x)
+        
+        # Excitation operation: channel-wise attention
+        excite = self.fc1(squeeze)
+        excite = self.relu(excite)
+        excite = self.fc2(excite)
+        attention = self.sigmoid(excite)
+        
+        # Scale the input features by the learned attention weights
+        return x * attention
